@@ -15,6 +15,7 @@
     "@types/sequelize": "^4.28.20",
     "@types/web3": "^1.2.2",
     "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fp-ts": "^2.16.6",
     "graphql": "^16.8.1",

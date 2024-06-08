@@ -2,6 +2,20 @@
 
 ## Instructions to run the application
 
+- Download the zip from the github or clone the project 
+- make sure you keep port 8080  free 
+- Go to the root directory in the mac terminal or intellij terminal 
+- Create the .env file on root with the database config details something like below
+    ```
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_USERNAME=anil
+    DB_PASSWORD=erias007
+    DB_NAME=orders
+    ```
+- For Mac / Linux run below commands on root directory
+    - `npm install`
+    - `npm start`
 
 ## Technologies Involved 
 
@@ -34,7 +48,7 @@
     4. When both account and marketKey filters are applied ![chain-account-market-filter](images/chain-account-market-filter.jpeg)
 
 
-## Questions to answer in readme 
+## Questions to answer in README.md 
 
 1. Write out or write pseudocode on how you would handle order execution to a blockchain like Optimism. Please be specific about the transaction queue, nonce ordering, and handling of gas fees.
 2. Eventually checking all orders every block becomes unsustainable as the number of orders placed grows linearly. How would you optimize validity checking that way orders can be executed efficiently? - implement price filter
