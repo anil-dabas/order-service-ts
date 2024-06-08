@@ -30,22 +30,22 @@
 - This project is an implementation to read the Limit orders from OP Mainnet using Subgraph Implementation as well as read the conditional orders from the OP Mainnet chain using the BlocksNumbers
 - Adding the orders in PostgreSQL database
 
-## Subgraph Implementation 
+## Subgraph Implementation (Demo URL's provided for all filters)
 
 - The endpoint to read orders that are fetched from subgraph on the basis of Market key and account as filter is  http://localhost:8080/orders/subgraph
-    1. When no filter is used ![subgraph-no-filter](images/subgraph-no-filter.jpeg)
-    2. When account filter is applied ![subgraph-account-filter](images/subgraph-account-filter.jpeg)
-    3. When Market filter is applied ![subgraph-market-filter](images/subgraph-market-filter.jpeg)
-    4. When both account and marketKey filters are applied ![subgraph-account-market-filter](images/subgraph-account-market-filter.jpeg)
+    1. When no filter is used http://localhost:8080/orders/subgraph ![subgraph-no-filter](images/subgraph-no-filter.jpeg) 
+    2. When account filter is applied http://localhost:8080/orders/subgraph?account=0x002e8b7e0297c25a79c7df37f5e6ec8b297cb08d ![subgraph-account-filter](images/subgraph-account-filter.jpeg) 
+    3. When Market filter is applied http://localhost:8080/orders/subgraph?marketKey=0x7345544842544350455250000000000000000000000000000000000000000000 ![subgraph-market-filter](images/subgraph-market-filter.jpeg)
+    4. When both account and marketKey filters are applied http://localhost:8080/orders/subgraph?account=0x002e8b7e0297c25a79c7df37f5e6ec8b297cb08d&marketKey=0x7345544842544350455250000000000000000000000000000000000000000000 ![subgraph-account-market-filter](images/subgraph-account-market-filter.jpeg) 
 
 
 
-## Chain Implementation
+## Chain Implementation (Demo URL's provided for all filters)
 - The endpoint to read orders that are fetched from subgraph on the basis of Market key and account as filter is  http://localhost:8080/orders/chain
-    1. When No filter is used ![chain-no-filter](images/chain-no-filter.jpeg)
-    2. When account filter is applied ![chain-account-filter](images/chain-account-filter.jpeg)
-    3. When Market filter is applied ![chain-market-filter](images/chain-market-filter.jpeg)
-    4. When both account and marketKey filters are applied ![chain-account-market-filter](images/chain-account-market-filter.jpeg)
+    1. When No filter is used http://localhost:8080/orders/chain ![chain-no-filter](images/chain-no-filter.jpeg)
+    2. When account filter is applied http://localhost:8080/orders/chain?account=0x04517Fb31B13188c8B81F5d4AfB0659de62aab04 ![chain-account-filter](images/chain-account-filter.jpeg)
+    3. When Market filter is applied http://localhost:8080/orders/chain?marketKey=0x7342544350455250000000000000000000000000000000000000000000000000 ![chain-market-filter](images/chain-market-filter.jpeg)
+    4. When both account and marketKey filters are applied http://localhost:8080/orders/chain?account=0x04517Fb31B13188c8B81F5d4AfB0659de62aab04&marketKey=0x7342544350455250000000000000000000000000000000000000000000000000 ![chain-account-market-filter](images/chain-account-market-filter.jpeg)
 
 
 ## Questions to answer in README.md 
