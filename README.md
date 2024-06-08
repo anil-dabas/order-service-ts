@@ -3,15 +3,15 @@
 ## Instructions to run the application
 
 - Download the zip from the github or clone the project 
-- make sure you keep port 8080  free 
-- Go to the root directory in the mac terminal or intellij terminal 
+- Make sure you keep port 8080  free 
+- Go to the root directory in the mac terminal or VS Code terminal 
 - Create the .env file on root with the database config details something like below
     ```
     DB_HOST=localhost
     DB_PORT=5432
-    DB_USERNAME=anil
-    DB_PASSWORD=erias007
-    DB_NAME=orders
+    DB_USERNAME=your_user
+    DB_PASSWORD=your_password
+    DB_NAME=your_database
     ```
 - For Mac / Linux run below commands on root directory
     - `npm install`
@@ -171,7 +171,6 @@ class TransactionQueue {
 })();
 
 ```
-
 ### 2. Optimizing Validity Checking for Efficient Order Execution
 
 To optimize validity checking, you can implement a price filter to reduce the number of orders checked on each block.
@@ -271,3 +270,5 @@ setInterval(async () => {
     await priceChecker.checkOrdersForExecution(currentMarketPrice);
 }, 60000); // Check every minute
 ```
+
+This approach optimizes order checking by reducing the number of orders evaluated on each block, making the process more scalable as the number of orders grows.
