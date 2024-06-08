@@ -6,16 +6,21 @@
 - Make sure you keep port 8080  free 
 - Go to the root directory in the mac terminal or VS Code terminal 
 - Create the .env file on root with the database config details something like below
-    ```
-    DB_HOST=localhost
-    DB_PORT=5432
-    DB_USERNAME=your_user
-    DB_PASSWORD=your_password
-    DB_NAME=your_database
-    ```
-- For Mac / Linux run below commands on root directory
-    - `npm install`
-    - `npm start`
+
+    1. `touch .env`
+    2. `vi .env`
+    3. Add below content with the details of your Postgres database 
+
+        ```
+        DB_HOST=localhost
+        DB_PORT=5432
+        DB_USERNAME=your_user
+        DB_PASSWORD=your_password
+        DB_NAME=your_database
+        ```
+    4. For Mac / Linux run below commands on root directory
+         `npm run install-and-start`
+    5. Image showing commands ![server-start](images/server-start.jpeg)
 
 ## Technologies Involved 
 
