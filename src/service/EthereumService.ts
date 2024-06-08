@@ -4,8 +4,6 @@ import contractAbi from '../abi/Events.json';
 import { AbiItem } from 'web3-utils';
 import { AppDataSource } from '../config/database';
 import { ConditionalOrder } from '../model/ConditionalOrder';
-import { eventNames } from 'process';
-const abi = require('web3-eth-abi'); // Import web3-eth-abi package
 
 export class EthereumService {
     private contractInstance = new web3.eth.Contract(contractAbi as AbiItem[], CONTRACT_ADDRESS);
@@ -17,36 +15,102 @@ export class EthereumService {
             const startBlock = BigInt(START_BLOCK);
             const batchSize = BigInt(BATCH_SIZE);
 
-            const eventSignatures = [
-                abi.encodeEventSignature('ConditionalOrderPlaced(address,uint256,bytes32,int256,int256,uint256,uint8,uint256,bool)'),
-                abi.encodeEventSignature('ConditionalOrderPlaced(address,uint256,bytes32,int256,int256,uint256,uint8,uint256,bool)'),
-                abi.encodeEventSignature('ConditionalOrderCancelled(address,uint256,uint8)'),
-                abi.encodeEventSignature('ConditionalOrderCancelled(address,uint256,bytes32,uint8)'),
-                abi.encodeEventSignature('ConditionalOrderFilled(address,uint256,uint256,uint256)'),
-                abi.encodeEventSignature('ConditionalOrderFilled(address,uint256,bytes32,uint256,uint256)'),
-                abi.encodeEventSignature('ConditionalOrderFilled(address,uint256,bytes32,uint256,uint256,uint8)')
-            ];
-    
             for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += batchSize) {
                 const toBlock = fromBlock + batchSize - BigInt(1) <= latestBlock ? fromBlock + batchSize - BigInt(1) : latestBlock;
-               // console.log(`Fetching events for ${eventSignatures} from block ${fromBlock.toString()} to ${toBlock.toString()}`);
 
                 const events = await this.contractInstance.getPastEvents('allEvents', {
                     fromBlock: fromBlock.toString(),
-                    toBlock: toBlock.toString(),
-                    filter: {
-                        event: 'ConditionalOrderPlaced'
-                    }
+                    toBlock: toBlock.toString()
                 });
 
                 for (const event of events) {
-                    // Process each event here
-                    console.log(event);
+                    await this.processEvent(event);
                 }
             }
-        
         } catch (error) {
-            console.error('Error fetching events:', error);
+            console.error('Error fetching or processing events:', error);
+        }
+    }
+
+    private async processEvent(event: any): Promise<void> {
+        const { event: eventType, returnValues } = event;
+
+        switch (eventType) {
+            case 'ConditionalOrderPlaced':
+                await this.processConditionalOrderPlaced(returnValues);
+                break;
+            case 'ConditionalOrderFilled':
+                await this.processConditionalOrderFilled(returnValues);
+                break;
+            case 'ConditionalOrderCancelled':
+                await this.processConditionalOrderCancelled(returnValues);
+                break;
+            default:
+                console.warn(`Unhandled event type: ${eventType}`);
+        }
+    }
+
+    private async processConditionalOrderPlaced(returnValues: any): Promise<void> {
+        const { account, conditionalOrderId, marketKey, marginDelta, sizeDelta, targetPrice, conditionalOrderType, desiredFillPrice, reduceOnly } = returnValues;
+        console.log(`Conditional order Id = ${conditionalOrderId} and the order type is ${conditionalOrderType}`);
+
+        const newOrder = this.orderRepository.create({
+            orderId: conditionalOrderId,
+            account,
+            marketKey,
+            marginDelta,
+            sizeDelta,
+            targetPrice,
+            conditionalOrderType,
+            desiredFillPrice,
+            reduceOnly,
+            readyForExecution: false
+        });
+
+        try {
+            await this.orderRepository.upsert(newOrder, ['orderId']);
+        } catch (error) {
+            console.error('Error saving order:', error);
+        }
+    }
+
+    private async processConditionalOrderFilled(returnValues: any): Promise<void> {
+        const { conditionalOrderId, fillPrice, keeperFee, priceOracle } = returnValues;
+
+        try {
+            const existingOrder = await this.orderRepository.findOneBy({ orderId: conditionalOrderId });
+            if (!existingOrder) {
+                console.log(`Order with orderId ${conditionalOrderId} does not exist in the database. Skipping update.`);
+                return;
+            }
+
+            existingOrder.fillPrice = fillPrice;
+            existingOrder.keeperFee = keeperFee;
+            existingOrder.priceOracle = priceOracle;
+
+            await this.orderRepository.save(existingOrder);
+            console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
+        } catch (error) {
+            console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
+        }
+    }
+
+    private async processConditionalOrderCancelled(returnValues: any): Promise<void> {
+        const { conditionalOrderId, cancelReason } = returnValues;
+
+        try {
+            const existingOrder = await this.orderRepository.findOneBy({ orderId: conditionalOrderId });
+            if (!existingOrder) {
+                console.log(`Order with orderId ${conditionalOrderId} does not exist in the database. Skipping update.`);
+                return;
+            }
+
+            existingOrder.cancelReason = cancelReason;
+
+            await this.orderRepository.save(existingOrder);
+            console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
+        } catch (error) {
+            console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
         }
     }
 }

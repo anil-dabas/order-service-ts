@@ -9,9 +9,6 @@ export class ConditionalOrder {
     @Column()
     account!: string;
 
-    @Column({ type: 'bytea' })
-    gelatoTaskId!: Buffer;
-
     @Column()
     marketKey!: string;
 
