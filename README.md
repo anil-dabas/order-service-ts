@@ -56,7 +56,7 @@
 
 ## Answers 
 
-### Handling Order Execution to a Blockchain like Optimism
+### 1. Handling Order Execution to a Blockchain like Optimism
 
 Handling order execution involves several key steps: managing a transaction queue, ensuring nonce ordering, and handling gas fees.
 
@@ -172,7 +172,7 @@ class TransactionQueue {
 
 ```
 
-### Optimizing Validity Checking for Efficient Order Execution
+### 2. Optimizing Validity Checking for Efficient Order Execution
 
 To optimize validity checking, you can implement a price filter to reduce the number of orders checked on each block.
 
@@ -183,7 +183,7 @@ To optimize validity checking, you can implement a price filter to reduce the nu
 - Efficient Order Retrieval:
     1. Use a data structure like a binary search tree or a sorted list to quickly retrieve orders within a specific price range.
 
-### Explanation:
+#### Explanation:
 
 `checkOrdersForExecution:`
 
