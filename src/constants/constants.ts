@@ -18,3 +18,8 @@ export const SMART_MARGIN_ORDERS_QUERY = `
     }
   }
 `;
+export const EVENT_TYPE = {
+  ConditionalOrderPlaced: 'ConditionalOrderPlaced',
+  ConditionalOrderFilled: 'ConditionalOrderFilled',
+  ConditionalOrderCancelled: 'ConditionalOrderCancelled'
+};

@@ -1,9 +1,13 @@
 import web3 from '../config/web3';
-import { CONTRACT_ADDRESS, BATCH_SIZE, START_BLOCK } from '../constants/constants';
+import { CONTRACT_ADDRESS, BATCH_SIZE, START_BLOCK ,EVENT_TYPE} from '../constants/constants';
 import contractAbi from '../abi/Events.json';
 import { AbiItem } from 'web3-utils';
 import { AppDataSource } from '../config/database';
 import { ConditionalOrder } from '../model/ConditionalOrder';
+import { Option, none, some, fold } from 'fp-ts/lib/Option';
+
+const { ConditionalOrderPlaced, ConditionalOrderFilled, ConditionalOrderCancelled } = EVENT_TYPE;
+
 
 export class EthereumService {
     private contractInstance = new web3.eth.Contract(contractAbi as AbiItem[], CONTRACT_ADDRESS);
@@ -36,13 +40,13 @@ export class EthereumService {
         const { event: eventType, returnValues } = event;
 
         switch (eventType) {
-            case 'ConditionalOrderPlaced':
+            case ConditionalOrderPlaced:
                 await this.processConditionalOrderPlaced(returnValues);
                 break;
-            case 'ConditionalOrderFilled':
+            case ConditionalOrderFilled:
                 await this.processConditionalOrderFilled(returnValues);
                 break;
-            case 'ConditionalOrderCancelled':
+            case ConditionalOrderCancelled:
                 await this.processConditionalOrderCancelled(returnValues);
                 break;
             default:
@@ -52,7 +56,6 @@ export class EthereumService {
 
     private async processConditionalOrderPlaced(returnValues: any): Promise<void> {
         const { account, conditionalOrderId, marketKey, marginDelta, sizeDelta, targetPrice, conditionalOrderType, desiredFillPrice, reduceOnly } = returnValues;
-        console.log(`Conditional order Id = ${conditionalOrderId} and the order type is ${conditionalOrderType}`);
 
         const newOrder = this.orderRepository.create({
             orderId: conditionalOrderId,
@@ -77,40 +80,52 @@ export class EthereumService {
     private async processConditionalOrderFilled(returnValues: any): Promise<void> {
         const { conditionalOrderId, fillPrice, keeperFee, priceOracle } = returnValues;
 
-        try {
-            const existingOrder = await this.orderRepository.findOneBy({ orderId: conditionalOrderId });
-            if (!existingOrder) {
-                console.log(`Order with orderId ${conditionalOrderId} does not exist in the database. Skipping update.`);
-                return;
+        const existingOrderOption = await this.findExistingOrder(conditionalOrderId);
+
+        fold(
+            () => {},
+            async (existingOrder: ConditionalOrder) => {
+                existingOrder.fillPrice = fillPrice;
+                existingOrder.keeperFee = keeperFee;
+                existingOrder.priceOracle = priceOracle;
+
+                try {
+                    await this.orderRepository.save(existingOrder);
+                    console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
+                } catch (error) {
+                    console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
+                }
             }
-
-            existingOrder.fillPrice = fillPrice;
-            existingOrder.keeperFee = keeperFee;
-            existingOrder.priceOracle = priceOracle;
-
-            await this.orderRepository.save(existingOrder);
-            console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
-        } catch (error) {
-            console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
-        }
+        )(existingOrderOption);
     }
 
     private async processConditionalOrderCancelled(returnValues: any): Promise<void> {
-        const { conditionalOrderId, cancelReason } = returnValues;
+        const { conditionalOrderId, reason } = returnValues;
 
+        const existingOrderOption = await this.findExistingOrder(conditionalOrderId);
+
+        fold(
+            () => {},
+            async (existingOrder: ConditionalOrder) => {
+                existingOrder.cancelReason = reason;
+
+                try {
+                    await this.orderRepository.save(existingOrder);
+                    console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
+                } catch (error) {
+                    console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
+                }
+            }
+        )(existingOrderOption);
+    }
+
+    private async findExistingOrder(conditionalOrderId: string): Promise<Option<ConditionalOrder>> {
         try {
             const existingOrder = await this.orderRepository.findOneBy({ orderId: conditionalOrderId });
-            if (!existingOrder) {
-                console.log(`Order with orderId ${conditionalOrderId} does not exist in the database. Skipping update.`);
-                return;
-            }
-
-            existingOrder.cancelReason = cancelReason;
-
-            await this.orderRepository.save(existingOrder);
-            console.log(`Order with orderId ${conditionalOrderId} updated successfully.`);
+            return existingOrder ? some(existingOrder) : none;
         } catch (error) {
-            console.error(`Error updating order with orderId ${conditionalOrderId}:`, error);
+            console.error(`Error finding order with orderId ${conditionalOrderId}:`, error);
+            return none;
         }
     }
 }
