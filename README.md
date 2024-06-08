@@ -272,3 +272,18 @@ setInterval(async () => {
 ```
 
 This approach optimizes order checking by reducing the number of orders evaluated on each block, making the process more scalable as the number of orders grows.
+
+### Screenshot of Database tables
+
+#### order
+
+![order](images/order.jpeg)
+
+#### conditional_order
+
+![conditional_order](images/conditional-order.png)
+
+
+### Adding the screenshot of my Alchemy dashboard for total requests
+
+![Alchemy-dashboard](images/alchemy-dashboard.jpeg)
