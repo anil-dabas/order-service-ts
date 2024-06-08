@@ -55,25 +55,27 @@ export class EthereumService {
     }
 
     private async processConditionalOrderPlaced(returnValues: any): Promise<void> {
-        const { account, conditionalOrderId, marketKey, marginDelta, sizeDelta, targetPrice, conditionalOrderType, desiredFillPrice, reduceOnly } = returnValues;
+        const { account, conditionalOrderId, marketKey, marginDelta, sizeDelta, targetPrice, conditionalOrderType, desiredFillPrice, reduceOnly } = returnValues; 
+        // Filtering only limit orders
+        if(conditionalOrderType === BigInt(0)){
+            const newOrder = this.orderRepository.create({
+                orderId: conditionalOrderId,
+                account,
+                marketKey,
+                marginDelta,
+                sizeDelta,
+                targetPrice,
+                conditionalOrderType,
+                desiredFillPrice,
+                reduceOnly,
+                readyForExecution: false
+            });
 
-        const newOrder = this.orderRepository.create({
-            orderId: conditionalOrderId,
-            account,
-            marketKey,
-            marginDelta,
-            sizeDelta,
-            targetPrice,
-            conditionalOrderType,
-            desiredFillPrice,
-            reduceOnly,
-            readyForExecution: false
-        });
-
-        try {
-            await this.orderRepository.upsert(newOrder, ['orderId']);
-        } catch (error) {
-            console.error('Error saving order:', error);
+            try {
+                await this.orderRepository.upsert(newOrder, ['orderId']);
+            } catch (error) {
+                console.error('Error saving order:', error);
+            }
         }
     }
 
